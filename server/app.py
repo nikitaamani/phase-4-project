@@ -8,6 +8,14 @@ from flask_restful import Resource
 
 # Local imports
 from config import app, db, api
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'your_database_uri'
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 # Add your model imports
 
 
