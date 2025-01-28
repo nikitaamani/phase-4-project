@@ -56,28 +56,28 @@ class User(db.Model, SerializerMixin):
 class Book(db.Model, SerializerMixin):
     __tablename__ = 'books'
 
-    #serialize rules
-    serialize_rules = ('-reviews.book', '-users.books', '-reviews.user',
-                       '-transactions.book')
+    id = db.Column(db.Integer,
+                   primary_key=True)  # Auto-incrementing primary key
+    title = db.Column(db.String(255),
+                      nullable=False)  # Title of the book (required)
+    author = db.Column(db.String(255),
+                       nullable=False)  # Author's name (required)
+    price = db.Column(db.Numeric(10, 2), nullable=False,
+                      default=0.00)  # Price of the book, default is 0.00
+    condition = db.Column(
+        Enum('new', 'used', name='book_condition'),
+        nullable=False,
+        default='new'
+    )  # Book condition, either 'new' or 'used', default is 'new'
+    status = db.Column(
+        Enum('available', 'rented', 'sold', name='book_status'),
+        nullable=False,
+        default='available')  # Book status, default is 'available'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                        nullable=False)  # Foreign key to the users table
 
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String, nullable=False)
-    author = db.Column(db.String, nullable=False)
-    price = db.Column(db.Integer, nullable=False, default=0)
-    condition = db.Column(Enum('new', 'used', name='book_condition'),
-                          nullable=False,
-                          default='new')  #used or new
-    status = db.Column(Enum('rent', 'sale', name='book_status'),
-                       nullable=False,
-                       default='rent')  #rent or sale
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-
-    # relationships
-    reviews = db.relationship('Review', back_populates='book')
-    users = association_proxy('reviews',
-                              'user',
-                              creator=lambda userObj: Review(user=userObj))
-    transactions = db.relationship('Transaction', back_populates='book')
+    def __repr__(self):
+        return f"<Book {self.id} : {self.title}>"
 
 
 class Transaction(db.Model, SerializerMixin):
