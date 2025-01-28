@@ -35,9 +35,6 @@ class User(db.Model, SerializerMixin):
         "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'",
         name='check_email_format'), )
 
-    def __repr__(self):
-        return f"<User {self.username}>"
-
     # ORM level constraint for email column. Flexible and more robust
     @validates('email')
     def validate_email(self, _, email):
@@ -53,6 +50,9 @@ class User(db.Model, SerializerMixin):
         except EmailNotValidError as e:
             # Raise an exception for invalid emails
             raise ValueError(f'Invalid email address: {e}')
+
+    def __repr__(self):
+        return f"<User {self.username}>"
 
 
 class Book(db.Model, SerializerMixin):
@@ -109,3 +109,35 @@ class Reviews(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Review {self.id} {self.comment}>"
+
+
+class Transactions(db.Model, SerializerMixin):
+    __tablename__ = 'transactions'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True)  # Auto-incrementing ID for each transaction
+    transaction_date = db.Column(
+        db.DateTime, default=func.now(),
+        nullable=False)  # Date of transaction, defaults to current time
+    transaction_type = db.Column(
+        Enum('rent', 'buy', name='transaction_type'),
+        nullable=False)  # Type of transaction (rent or buy)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                        nullable=False)  # Foreign key to User model
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'),
+                        nullable=False)  # Foreign key to Book model
+    returned = db.Column(
+        db.Boolean, default=False, nullable=False
+    )  # Status to track if the book is returned (applicable for rentals)
+
+    # ORM-level validation for transaction_type
+    @validates('transaction_type')
+    def validate_transaction_type(self, _, transaction_type):
+        if transaction_type not in ['rent', 'buy']:
+            raise ValueError(
+                "Invalid transaction type. Must be either 'rent' or 'buy'.")
+        return transaction_type
+
+    def __repr__(self):
+        return f"<Transaction {self.id} for Book {self.book_id}>"
