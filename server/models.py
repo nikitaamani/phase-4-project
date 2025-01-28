@@ -82,7 +82,7 @@ class Book(db.Model, SerializerMixin):
         return f"<Book {self.id} : {self.title}>"
 
 
-class Rating(db.Model, SerializerMixin):
+class Reviews(db.Model, SerializerMixin):
     __tablename__ = 'reviews'
 
     id = db.Column(db.Integer,
