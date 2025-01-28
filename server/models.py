@@ -30,6 +30,7 @@ class User(db.Model, SerializerMixin):
         db.DateTime, default=func.now(),
         onupdate=func.now())  # Automatically updated on record modification
 
+    # Basic database constraint for email column
     __table_args__ = (db.CheckConstraint(
         "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'",
         name='check_email_format'), )
@@ -37,6 +38,7 @@ class User(db.Model, SerializerMixin):
     def __repr__(self):
         return f"<User {self.username}>"
 
+    # ORM level constraint for email column. Flexible and more robust
     @validates('email')
     def validate_email(self, _, email):
         """
@@ -81,23 +83,29 @@ class Book(db.Model, SerializerMixin):
 
 
 class Transaction(db.Model, SerializerMixin):
-    __tablename__ = 'transactions'
+    __tablename__ = 'reviews'
 
-    #serialize rules
-    # serialize_rules = ('-book.transactions', 'user.transactions', '-book.reviews', '-user.reviews')
-    serialize_only = ('id', 'transaction_date', 'transaction_type', 'user_id',
-                      "book_id")
+    id = db.Column(db.Integer,
+                   primary_key=True)  # Auto-incrementing ID for each review
+    rating = db.Column(db.Integer, nullable=False)  # Rating between 1 and 5
+    comment = db.Column(db.Text, nullable=True)  # Optional review comment
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                        nullable=False)  # Foreign key to User model
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'),
+                        nullable=False)  # Foreign key to Book model
 
-    id = db.Column(db.Integer, primary_key=True)
-    transaction_date = db.Column(db.DateTime)
-    transaction_type = db.Column(Enum('purchase',
-                                      'sale',
-                                      'rent',
-                                      name='transaction_type'),
-                                 nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    book_id = db.Column(db.Integer, db.ForeignKey("books.id"))
+    # Database-level constraint to ensure rating is between 1 and 5
+    __table_args__ = (db.CheckConstraint('rating >= 1 AND rating <= 5',
+                                         name='check_rating_range'), )
 
-    #relationships
-    book = db.relationship('Book', back_populates='transactions')
-    user = db.relationship('User', back_populates='transactions')
+    # ORM-level validation for rating
+    @validates('rating')
+    def validate_rating(self, _, rating):
+        if not isinstance(rating, int):
+            raise ValueError("Rating must be an integer")
+        if not (1 <= rating <= 5):
+            raise ValueError("Rating must be between 1 and 5")
+        return rating
+
+    def __repr__(self):
+        return f"<Review {self.id} {self.comment}>"
