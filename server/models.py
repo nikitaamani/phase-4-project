@@ -1,3 +1,4 @@
+from config import bcrypt
 from email_validator import EmailNotValidError, validate_email
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Enum

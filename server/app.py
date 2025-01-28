@@ -1,25 +1,24 @@
-#!/usr/bin/env python3
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from config import app
+from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
-
-# Initialize Flask app
-app = Flask(__name__)
-
-# Configuration for SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'  # Change to your database URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+from flask_restful import Api, Resource
+from models import db
 
 # Initialize extensions
-db = SQLAlchemy(app)
+db.init_app(app)
+
 migrate = Migrate(app, db)
 
+api = Api(app)
 
-@app.route('/')
-def index():
-    return '<h1>Project Server</h1>'
 
+class Index(Resource):
+
+    def get(self):
+        return {'hello': 'world'}
+
+
+api.add_resource(Index, '/')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
-
