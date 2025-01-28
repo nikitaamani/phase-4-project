@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
-
-# Standard library imports
-
-# Remote library imports
-from flask import request
-from flask_restful import Resource
-
-# Local imports
-from config import app, db, api
-from flask_migrate import Migrate
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
+# Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'your_database_uri'
+
+# Configuration for SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'  # Change to your database URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize extensions
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Add your model imports
-
-
-# Views go here!
 
 @app.route('/')
 def index():
